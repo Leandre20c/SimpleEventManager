@@ -1,0 +1,16 @@
+name: SimpleEventManager
+version: '1.0'
+main: org.simpleEventManager.SimpleEventManager
+api-version: '1.21'
+
+commands:
+  event:
+    description: Gère les événements automatiques
+    usage: /event [start|stop|setspawn|rules]
+    permission: event.use
+
+permissions:
+  event.use:
+    default: true
+  event.admin:
+    default: op

@@ -1,0 +1,13 @@
+random_event:
+  - "18:00"
+  - "20:00"
+jump_race:
+  - "8:00"
+spleef:
+  - "16:00"
+
+rewards:
+  1: "eco give %player% 6000"
+  2: "eco give %player% 5000"
+  3: "eco give %player% 4000"
+  default: "eco give %player% 1000"
