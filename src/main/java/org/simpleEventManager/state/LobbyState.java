@@ -1,4 +1,4 @@
-﻿package org.simpleEventManager.state;
+package org.simpleEventManager.state;
 
 import java.util.HashSet;
 import java.util.Set;

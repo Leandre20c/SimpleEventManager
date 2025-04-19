@@ -1,4 +1,4 @@
-﻿package org.simpleEventManager.command.sub;
+package org.simpleEventManager.command.sub;
 
 import org.bukkit.command.CommandSender;
 import org.simpleEventManager.SimpleEventManager;

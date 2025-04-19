@@ -1,4 +1,4 @@
-﻿package org.simpleEventManager.reward;
+package org.simpleEventManager.reward;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
