@@ -23,7 +23,7 @@ public class ListCommand implements SubCommand {
 
         sender.sendMessage("§6§lEvents disponibles:");
         for (EventGame event : events) {
-            sender.sendMessage(" §e• §a" + event.getEventName() + "§7 - " + event.getDescription());
+            sender.sendMessage(" §e• §a" + event.getEventName() + "§7 - " + event.getEventDescription());
         }
         return true;
     }
