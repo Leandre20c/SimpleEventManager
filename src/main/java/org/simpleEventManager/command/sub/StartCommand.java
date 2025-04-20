@@ -7,7 +7,8 @@ import org.simpleEventManager.SimpleEventManager;
 import org.simpleEventManager.api.EventGame;
 import org.simpleEventManager.state.LobbyState;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 
 public class StartCommand implements SubCommand {
 
@@ -19,47 +20,66 @@ public class StartCommand implements SubCommand {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+        LobbyState lobbyState = plugin.getLobbyState();
+
+        if (args.length == 2) {
+            // /event start <event_name> -> ouvre le lobby
+            if (lobbyState.isLobbyOpen()) {
+                sender.sendMessage("§cUn lobby est déjà actif.");
+                return true;
+            }
+
+            EventGame game = plugin.getEventLoader().getEventByName(args[1]);
+            if (game == null) {
+                sender.sendMessage("§cCet événement n'existe pas.");
+                return true;
+            }
+
+            lobbyState.openLobby();
+            plugin.setCurrentGame(game);
+            Bukkit.broadcastMessage("§aUn event §e" + game.getEventName() + "§a va bientôt commencer ! Faites §e/event join §apour participer. Lancement dans 10 minutes.");
+
+            // Timer 10 min automatique
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (lobbyState.isLobbyOpen()) {
+                    launchEvent(sender, lobbyState, game);
+                }
+            }, 12000L); // 12000 ticks = 10 min
+
+            return true;
+
+        } else if (args.length == 1) {
+            // /event start -> Lance directement si lobby ouvert
+            if (!lobbyState.isLobbyOpen()) {
+                sender.sendMessage("§cAucun lobby actif actuellement.");
+                return true;
+            }
+
+            EventGame currentGame = plugin.getCurrentGame();
+            if (currentGame == null) {
+                sender.sendMessage("§cErreur interne : Aucun événement chargé.");
+                return true;
+            }
+
+            launchEvent(sender, lobbyState, currentGame);
             return true;
         }
 
-        if (!player.hasPermission("event.admin")) {
-            player.sendMessage("§cTu n'as pas la permission.");
-            return true;
-        }
-
-        if (args.length < 2) {
-            player.sendMessage("§cUsage: /event start <eventName>");
-            return true;
-        }
-
-        String name = args[1];
-        EventGame event = plugin.getEventLoader().getEventByName(name);
-        if (event == null) {
-            player.sendMessage("§cEvent '" + name + "' introuvable.");
-            return true;
-        }
-
-        LobbyState lobby = plugin.getLobbyState();
-        if (!lobby.isLobbyOpen()) {
-            player.sendMessage("§cAucun lobby ouvert.");
-            return true;
-        }
-
-        List<Player> players = lobby.getWaitingPlayers().stream()
-                .map(Bukkit::getPlayer)
-                .filter(p -> p != null && p.isOnline())
-                .toList();
-
-        if (players.isEmpty()) {
-            player.sendMessage("§cAucun joueur dans le lobby.");
-            return true;
-        }
-
-        event.start(players);
-        lobby.setLobbyOpen(false);
-        Bukkit.broadcastMessage("§6[Event] §aEvent '" + event.getEventName() + "' lancé avec " + players.size() + " joueurs !");
+        sender.sendMessage("§cUsage : /event start <event_name> ou /event start");
         return true;
+    }
+
+    private void launchEvent(CommandSender sender, LobbyState lobbyState, EventGame game) {
+        lobbyState.closeLobby();
+
+        Set<Player> participants = plugin.getParticipantManager().getOnlineParticipants();
+        if (participants.size() < 2) {
+            Bukkit.broadcastMessage("§cPas assez de joueurs inscrits pour démarrer l'événement !");
+            plugin.getParticipantManager().clear();
+            return;
+        }
+
+        game.start(new ArrayList<>(participants));
+        Bukkit.broadcastMessage("§aL'événement §e" + game.getEventName() + "§a commence maintenant avec §e" + participants.size() + " joueurs§a ! Bonne chance à tous !");
     }
 }

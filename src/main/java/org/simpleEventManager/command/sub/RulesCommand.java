@@ -15,17 +15,17 @@ public class RulesCommand implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+            sender.sendMessage(plugin.getMessageManager().prefixed("only-players"));
             return true;
         }
 
         if (!plugin.getLobbyState().isLobbyOpen()) {
-            player.sendMessage("§cLes règles ne sont disponibles que dans le lobby.");
+            player.sendMessage(plugin.getMessageManager().prefixed("rules-unavailable"));
             return true;
         }
 
-        // à terme : afficher les règles dynamiques de l'event en cours
-        player.sendMessage("§eRègles de l’event : survivre, gagner, et s’amuser !");
+        // Affichage des règles, à terme dynamiques
+        player.sendMessage(plugin.getMessageManager().get("rules-message"));
         return true;
     }
 }

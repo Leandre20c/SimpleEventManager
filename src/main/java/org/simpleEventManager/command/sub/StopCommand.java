@@ -4,6 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.simpleEventManager.SimpleEventManager;
+import org.simpleEventManager.api.EventGame;
+import org.simpleEventManager.state.LobbyState;
+
+import java.util.Set;
 
 public class StopCommand implements SubCommand {
 
@@ -15,20 +19,35 @@ public class StopCommand implements SubCommand {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+        LobbyState lobbyState = plugin.getLobbyState();
+        EventGame currentGame = plugin.getCurrentGame();
+
+        if (lobbyState.isLobbyOpen()) {
+            lobbyState.closeLobby();
+            teleportAllParticipantsToSpawn();
+            plugin.getParticipantManager().clear();
+            Bukkit.broadcastMessage("§cLe lobby a été fermé prématurément. L’événement n’aura pas lieu.");
             return true;
         }
 
-        if (!player.hasPermission("event.admin")) {
-            player.sendMessage("§cTu n'as pas la permission.");
+        if (currentGame != null) {
+            currentGame.stop();
+            teleportAllParticipantsToSpawn();
+            plugin.setCurrentGame(null);
+            plugin.getParticipantManager().clear();
+            Bukkit.broadcastMessage("§cL’événement en cours a été arrêté par un administrateur.");
             return true;
         }
 
-        Bukkit.broadcastMessage("§c[Event] L’event a été annulé.");
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn @a"); // ou autre commande
-
-        plugin.getLobbyState().setLobbyOpen(false);
+        sender.sendMessage("§cAucun lobby ni événement actif actuellement.");
         return true;
+    }
+
+    private void teleportAllParticipantsToSpawn() {
+        Set<Player> participants = plugin.getParticipantManager().getOnlineParticipants();
+        participants.forEach(player -> {
+            player.performCommand("warp spawn");
+            player.sendMessage("§eVous avez été téléporté au spawn suite à la fermeture de l'événement.");
+        });
     }
 }

@@ -1,0 +1,8 @@
+﻿prefix: "§6[Event] "
+
+unknown-command: "{prefix}§cUnknown command."
+player-only: "{prefix}§cOnly players can use this command."
+usage: "{prefix}§eUtilise /event <start|setspawn|rules|stop|join|list>"
+no-event-yet: "{prefix}§cThere is no event yet."
+lobby-joined: "{prefix}§eYou have been joined the lobby."
+not-in-lobby: "{prefix}§cYou must be in the lobby."

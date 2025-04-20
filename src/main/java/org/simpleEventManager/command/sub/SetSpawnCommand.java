@@ -30,14 +30,14 @@ public class SetSpawnCommand implements SubCommand {
             return true;
         }
 
-        Location loc = player.getLocation();
-        plugin.getConfig().set("event-lobby.world", loc.getWorld().getName());
-        plugin.getConfig().set("event-lobby.x", loc.getX());
-        plugin.getConfig().set("event-lobby.y", loc.getY());
-        plugin.getConfig().set("event-lobby.z", loc.getZ());
-        plugin.getConfig().set("event-lobby.yaw", loc.getYaw());
-        plugin.getConfig().set("event-lobby.pitch", loc.getPitch());
-        plugin.saveConfig();
+            Location loc = player.getLocation();
+            plugin.getConfig().set("event-lobby.world", loc.getWorld().getName());
+            plugin.getConfig().set("event-lobby.x", loc.getX());
+            plugin.getConfig().set("event-lobby.y", loc.getY());
+            plugin.getConfig().set("event-lobby.z", loc.getZ());
+            plugin.getConfig().set("event-lobby.yaw", loc.getYaw());
+            plugin.getConfig().set("event-lobby.pitch", loc.getPitch());
+            plugin.saveConfig();
 
         player.sendMessage("§aSpawn du lobby défini !");
         return true;

@@ -21,17 +21,19 @@ public class JoinCommand implements SubCommand {
         }
 
         if (!plugin.getLobbyState().isLobbyOpen()) {
-            player.sendMessage("§cAucun event n’est en préparation actuellement.");
+            player.sendMessage("§cAucun événement n'est en cours de préparation.");
             return true;
         }
 
-        plugin.getLobbyState().addPlayer(player.getUniqueId());
-        Location loc = plugin.getLobbySpawn();
-        if (loc != null) {
-            player.teleport(loc);
+        plugin.getParticipantManager().join(player);
+        Location lobbySpawn = plugin.getLobbyLocation();
+        if (lobbySpawn == null){
+            player.sendMessage("§cLe lobby n'a pas été défini.");
+            return true;
         }
 
-        player.sendMessage("§aTu as rejoint le lobby de l’event !");
+        player.teleport(lobbySpawn);
+        player.sendMessage("§aTu as rejoint le lobby de l’événement !");
         return true;
     }
 }
