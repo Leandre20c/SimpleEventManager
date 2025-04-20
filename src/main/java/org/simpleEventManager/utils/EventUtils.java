@@ -1,4 +1,4 @@
-﻿package org.simpleEventManager.utils;
+package org.simpleEventManager.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
