@@ -51,7 +51,6 @@ public class EventUtils {
                 Class<?> clazz = Class.forName(className);
                 Package pkg = clazz.getPackage();
                 if (pkg != null && pkg.getName().startsWith("org.")) {
-                    // Ex : org.spleefEventGame → spleef
                     return pkg.getName().split("\\.")[1].replace("EventGame", "").toLowerCase();
                 }
             } catch (ClassNotFoundException ignored) {}

@@ -56,6 +56,25 @@ public class EventCommand implements CommandExecutor, TabCompleter {
                     .sorted()
                     .toList();
         }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("setspawn")) {
+            List<String> completions = new ArrayList<>();
+            completions.add("lobby");
+            plugin.getEventLoader().getAllEvents().forEach(event ->
+                    completions.add(event.getEventName().toLowerCase())
+            );
+            return completions;
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("start")) {
+            List<String> completions = new ArrayList<>();
+            plugin.getEventLoader().getAllEvents().forEach(event ->
+                    completions.add(event.getEventName().toLowerCase())
+            );
+            return completions;
+        }
+
         return Collections.emptyList();
     }
+
 }

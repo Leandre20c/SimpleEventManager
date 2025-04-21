@@ -9,5 +9,7 @@ public interface EventGame {
     void start(List<Player> participants);
     void stop();
     boolean hasWinner();
-    Player getWinner();
+    default List<Player> getWinners() {
+        return List.of();
+    }
 }

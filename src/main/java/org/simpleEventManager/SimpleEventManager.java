@@ -10,13 +10,15 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.simpleEventManager.api.EventGame;
 import org.simpleEventManager.command.EventCommand;
+import org.simpleEventManager.manager.EventController;
 import org.simpleEventManager.manager.EventLoader;
 import org.simpleEventManager.manager.MessageManager;
 import org.simpleEventManager.manager.ParticipantManager;
-import org.simpleEventManager.reward.RewardDistributor;
+import org.simpleEventManager.manager.RewardManager;
 import org.simpleEventManager.scheduler.EventScheduler;
 import org.simpleEventManager.state.LobbyState;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 public class SimpleEventManager extends JavaPlugin {
@@ -25,6 +27,8 @@ public class SimpleEventManager extends JavaPlugin {
     private final ParticipantManager participantManager = new ParticipantManager();
     private final EventLoader eventLoader = new EventLoader();
     private final MessageManager messageManager = new MessageManager(this);
+    private RewardManager rewardManager;
+    private EventController eventController;
     private EventGame currentGame;
 
     @Override
@@ -32,6 +36,8 @@ public class SimpleEventManager extends JavaPlugin {
         saveDefaultConfig();
         new EventCommand(this);
         new EventScheduler(this).start();
+        this.eventController = new EventController(this);
+        this.rewardManager = new RewardManager(this);
         eventLoader.loadEvents();
 
         getServer().getPluginManager().registerEvents(new Listener() {
@@ -44,6 +50,13 @@ public class SimpleEventManager extends JavaPlugin {
                 }
             }
         }, this);
+
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            EventGame game = getCurrentGame();
+            if (game != null && game.hasWinner()) {
+                getEventController().endEvent(game);
+            }
+        }, 20L, 20L);
 
         getLogger().info("SimpleEventManager enabled!");
     }
@@ -69,6 +82,10 @@ public class SimpleEventManager extends JavaPlugin {
         return messageManager;
     }
 
+    public EventController getEventController() {
+        return eventController;
+    }
+
     public EventGame getCurrentGame() {
         return currentGame;
     }
@@ -88,5 +105,15 @@ public class SimpleEventManager extends JavaPlugin {
                 (float) config.getDouble("event-lobby.yaw"),
                 (float) config.getDouble("event-lobby.pitch")
         );
+    }
+
+    public void togglePvp(boolean activated, Player player){
+        player.setInvulnerable(activated);
+    }
+
+    public void togglePvp(boolean activated, List<Player> players){
+        for (Player player : players) {
+            player.setInvulnerable(activated);
+        }
     }
 }

@@ -34,6 +34,7 @@ public class JoinCommand implements SubCommand {
 
         player.teleport(lobbySpawn);
         player.sendMessage("§aTu as rejoint le lobby de l’événement !");
+        plugin.togglePvp(false, player);
         return true;
     }
 }

@@ -28,4 +28,5 @@ public class EventLoader {
                 .filter(e -> e.getEventName().equalsIgnoreCase(name))
                 .findFirst().orElse(null);
     }
+
 }
