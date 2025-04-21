@@ -10,14 +10,15 @@ import java.util.List;
 
 public class EventUtils {
 
-    private static final SimpleEventManager plugin =
-            (SimpleEventManager) Bukkit.getPluginManager().getPlugin("SimpleEventManager");
-
-    public static Location getEventSpawnLocation(String eventName) {
+    public static Location getEventSpawnLocation(SimpleEventManager plugin, String eventName) {
         FileConfiguration config = plugin.getConfig();
         String path = "event-spawns." + eventName.toLowerCase();
 
-        if (!config.contains(path + ".world")) return null;
+        if (!config.contains(path + ".world")) {
+            plugin.getLogger().warning("[SimpleEventManager] Aucun spawn défini pour " + eventName);
+            return null;
+        }
+
         return new Location(
                 Bukkit.getWorld(config.getString(path + ".world")),
                 config.getDouble(path + ".x"),
@@ -28,33 +29,15 @@ public class EventUtils {
         );
     }
 
-    public static Location getEventSpawnLocation() {
-        return getEventSpawnLocation(getCallingEventName());
-    }
-
-    public static void teleportToEventSpawn(List<Player> players) {
-        Location spawn = getEventSpawnLocation();
+    public static void teleportToEventSpawn(SimpleEventManager plugin, String eventName, List<Player> players) {
+        Location spawn = getEventSpawnLocation(plugin, eventName);
         if (spawn == null) {
-            Bukkit.getLogger().warning("[SimpleEventManager] Aucune location trouvée pour le spawn de l’event.");
+            plugin.getLogger().warning("§cImpossible de téléporter les joueurs : aucun spawn pour " + eventName);
             return;
         }
+
         for (Player player : players) {
             player.teleport(spawn);
         }
-    }
-
-    private static String getCallingEventName() {
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        for (StackTraceElement element : stack) {
-            String className = element.getClassName();
-            try {
-                Class<?> clazz = Class.forName(className);
-                Package pkg = clazz.getPackage();
-                if (pkg != null && pkg.getName().startsWith("org.")) {
-                    return pkg.getName().split("\\.")[1].replace("EventGame", "").toLowerCase();
-                }
-            } catch (ClassNotFoundException ignored) {}
-        }
-        return "unknown";
     }
 }
