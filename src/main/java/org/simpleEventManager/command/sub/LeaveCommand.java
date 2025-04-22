@@ -52,6 +52,7 @@ public class LeaveCommand implements SubCommand {
     }
 
     private boolean isInEventWorld(Player player) {
-        return player.getWorld().equals(EventUtils.getEventSpawnLocation().getWorld());
+        return player.teleport(EventUtils.getEventSpawnLocation(plugin, plugin.getCurrentGame().getEventName()));
+
     }
 }
