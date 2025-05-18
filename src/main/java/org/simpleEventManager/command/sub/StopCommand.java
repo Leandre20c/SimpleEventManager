@@ -3,9 +3,11 @@ package org.simpleEventManager.command.sub;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.simpleEventManager.SimpleEventManager;
 import org.simpleEventManager.api.EventGame;
 import org.simpleEventManager.state.LobbyState;
+import org.simpleEventManager.utils.LobbyStarter;
 
 import java.util.Set;
 
@@ -22,7 +24,14 @@ public class StopCommand implements SubCommand {
         LobbyState lobbyState = plugin.getLobbyState();
         EventGame currentGame = plugin.getCurrentGame();
 
+        if (!sender.hasPermission("event.admin")) {
+            sender.sendMessage(plugin.getMessageManager().prefixed("no-permission"));
+            return true;
+        }
+
+        // Si un lobby est actif
         if (lobbyState.isLobbyOpen()) {
+            LobbyStarter.cancelCountdown();
             lobbyState.closeLobby();
             teleportAllParticipantsToSpawn();
             plugin.getParticipantManager().clear();
@@ -30,8 +39,12 @@ public class StopCommand implements SubCommand {
             return true;
         }
 
+        // Si un event est en cours
         if (currentGame != null) {
             currentGame.stop();
+            if (currentGame instanceof JavaPlugin jp) {
+                Bukkit.getScheduler().cancelTasks(jp);
+            }
             teleportAllParticipantsToSpawn();
             plugin.setCurrentGame(null);
             plugin.getParticipantManager().clear();
@@ -45,9 +58,6 @@ public class StopCommand implements SubCommand {
 
     private void teleportAllParticipantsToSpawn() {
         Set<Player> participants = plugin.getParticipantManager().getOnlineParticipants();
-        participants.forEach(player -> {
-            player.performCommand("warp spawn");
-            player.sendMessage("§eVous avez été téléporté au spawn suite à la fermeture de l'événement.");
-        });
+        participants.forEach(player -> player.performCommand("event leave"));
     }
 }

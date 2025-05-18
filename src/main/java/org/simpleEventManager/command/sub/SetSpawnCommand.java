@@ -20,12 +20,12 @@ public class SetSpawnCommand implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+            sender.sendMessage(plugin.getMessageManager().prefixed("only-players"));
             return true;
         }
 
-        if (!player.hasPermission("event.admin")) {
-            player.sendMessage("§cTu n'as pas la permission.");
+        if (!sender.hasPermission("event.admin")) {
+            sender.sendMessage(plugin.getMessageManager().prefixed("no-permission"));
             return true;
         }
 

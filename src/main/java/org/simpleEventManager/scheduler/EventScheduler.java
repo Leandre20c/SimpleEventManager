@@ -2,15 +2,13 @@ package org.simpleEventManager.scheduler;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.simpleEventManager.SimpleEventManager;
 import org.simpleEventManager.api.EventGame;
+import org.simpleEventManager.utils.LobbyStarter;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class EventScheduler extends BukkitRunnable {
 
@@ -21,7 +19,7 @@ public class EventScheduler extends BukkitRunnable {
     }
 
     public void start() {
-        runTaskTimer(plugin, 20L, 20L * 60); // 1 min
+        runTaskTimer(plugin, 20L, 20L * 60); // toutes les minutes
     }
 
     @Override
@@ -44,26 +42,20 @@ public class EventScheduler extends BukkitRunnable {
                 int minute = Integer.parseInt(split[1]);
 
                 if (now.getHour() == hour && now.getMinute() == minute) {
-                    EventGame game = plugin.getEventLoader().getEventByName(eventName);
+                    EventGame game;
+
+                    if (eventName.equalsIgnoreCase("RANDOM_EVENT")) {
+                        List<EventGame> events = plugin.getEventLoader().getAllEvents();
+                        if (events.isEmpty()) return;
+
+                        game = events.get((int) (Math.random() * events.size()));
+                        Bukkit.broadcastMessage("§e[RANDOM] Un événement aléatoire a été sélectionné : §6" + game.getEventName());
+                    } else {
+                        game = plugin.getEventLoader().getEventByName(eventName);
+                    }
+
                     if (game != null) {
-                        plugin.getLobbyState().openLobby();
-                        plugin.setCurrentGame(game);
-                        Bukkit.broadcastMessage("§aL’événement §e" + eventName + "§a commencera dans 10 minutes ! Faites §e/event join§a.");
-
-                        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                            if (plugin.getLobbyState().isLobbyOpen()) {
-                                Set<Player> participants = plugin.getParticipantManager().getOnlineParticipants();
-                                plugin.getLobbyState().closeLobby();
-
-                                if (participants.size() >= 2) {
-                                    game.start(new ArrayList<>(participants));
-                                    Bukkit.broadcastMessage("§aL'événement §e" + eventName + "§a démarre avec §e" + participants.size() + " joueurs§a !");
-                                } else {
-                                    Bukkit.broadcastMessage("§cL'événement §e" + eventName + "§c a été annulé par manque de participants.");
-                                    plugin.getParticipantManager().clear();
-                                }
-                            }
-                        }, 20L * 60 * 10); // 10 minutes
+                        LobbyStarter.startLobbyWithCountdown(plugin, game);
                     }
                 }
             }

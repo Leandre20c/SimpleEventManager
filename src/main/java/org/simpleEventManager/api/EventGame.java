@@ -12,4 +12,10 @@ public interface EventGame {
     default List<Player> getWinners() {
         return List.of();
     }
+    default void setMode(String mode) {
+        // optional sub events
+    }
+    default String getMode() {
+        return "default";
+    }
 }

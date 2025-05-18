@@ -1,5 +1,6 @@
 package org.simpleEventManager.command.sub;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,7 +18,7 @@ public class LeaveCommand implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+            sender.sendMessage(plugin.getMessageManager().prefixed("only-players"));
             return true;
         }
 
@@ -33,7 +34,7 @@ public class LeaveCommand implements SubCommand {
         plugin.getParticipantManager().leave(player);
         resetPlayerState(player);
 
-        player.teleport(player.getServer().getWorld("world").getSpawnLocation());
+        player.performCommand("spawn");
 
         player.sendMessage("§cTu as quitté l’événement.");
         return true;

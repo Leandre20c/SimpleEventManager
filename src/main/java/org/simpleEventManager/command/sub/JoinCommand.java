@@ -16,7 +16,7 @@ public class JoinCommand implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+            sender.sendMessage(plugin.getMessageManager().prefixed("only-players"));
             return true;
         }
 
@@ -27,8 +27,8 @@ public class JoinCommand implements SubCommand {
 
         plugin.getParticipantManager().join(player);
         Location lobbySpawn = plugin.getLobbyLocation();
-        if (lobbySpawn == null){
-            player.sendMessage("§cLe lobby n'a pas été défini.");
+        if (lobbySpawn == null) {
+            player.sendMessage("§cLe spawn du lobby n'a pas été défini.");
             return true;
         }
 

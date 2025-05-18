@@ -1,16 +1,19 @@
 name: SimpleEventManager
-version: '1.0'
+version: '1.14'
 main: org.simpleEventManager.SimpleEventManager
 api-version: '1.21'
 
 commands:
   event:
     description: Gère les événements automatiques
-    usage: /event [start|stop|setspawn|rules]
+    usage: /event [join|leave|list|rules|start|stop|setspawn]
     permission: event.use
 
 permissions:
   event.use:
+    description: Permet aux joueurs d'accéder aux commandes /event join, leave, list, rules
     default: true
+
   event.admin:
+    description: Permet d'accéder aux commandes d'administration (start, stop, setspawn)
     default: op

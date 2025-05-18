@@ -1,13 +1,13 @@
 package org.simpleEventManager.manager;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.simpleEventManager.SimpleEventManager;
 import org.simpleEventManager.api.EventGame;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class EventController {
 
@@ -18,31 +18,31 @@ public class EventController {
     }
 
     public void endEvent(EventGame game) {
+        List<Player> winners = new ArrayList<>(game.getWinners());
+
+        for (Player player : winners) {
+            plugin.getWinManager().addWin(player.getUniqueId(), game.getEventName());
+        }
+
+        game.stop();
+
         Bukkit.broadcastMessage("§cL’événement §e" + game.getEventName() + " §cvient de se terminer !");
 
-        List<Player> winners = new ArrayList<>();
-        if (game.hasWinner()) {
-            winners = game.getWinners();
-            if (!winners.isEmpty()) {
-                Bukkit.broadcastMessage("§6§l🏆 Classement des gagnants :");
-                for (int i = 0; i < winners.size(); i++) {
-                    Player winner = winners.get(i);
-                    Bukkit.broadcastMessage("§e#" + (i + 1) + " §f" + winner.getName());
-                }
+        if (!winners.isEmpty()) {
+            Bukkit.broadcastMessage("§6§l🏆 Classement des gagnants :");
+            for (int i = 0; i < winners.size(); i++) {
+                Player w = winners.get(i);
+                Bukkit.broadcastMessage("§e#" + (i + 1) + " §f" + w.getName());
             }
         }
 
-        // Reset & téléportation
         for (Player player : plugin.getParticipantManager().getOnlineParticipants()) {
             resetPlayer(player);
-            player.performCommand("warp spawn");
-
+            player.performCommand("spawn");
             player.sendMessage("§eVous avez été téléporté au spawn. Merci d’avoir participé !");
         }
 
-        // Récompenses
-        RewardManager rewardManager = new RewardManager(plugin);
-        rewardManager.distribute(winners);
+        new RewardManager(plugin).distribute(winners);
 
         plugin.getParticipantManager().clear();
         plugin.setCurrentGame(null);

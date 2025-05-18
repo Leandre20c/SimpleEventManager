@@ -17,11 +17,11 @@ public class ListCommand implements SubCommand {
         var events = plugin.getEventLoader().getAllEvents();
 
         if (events.isEmpty()) {
-            sender.sendMessage("§eThere is no event loaded.");
+            sender.sendMessage("§eIl n'y a pas d'event chargé.");
             return true;
         }
 
-        sender.sendMessage("§6§lEvents available:");
+        sender.sendMessage("§6§lEvents disponibles:");
         for (EventGame event : events) {
             sender.sendMessage(" §e• §a" + event.getEventName() + "§7 - " + event.getEventDescription());
         }

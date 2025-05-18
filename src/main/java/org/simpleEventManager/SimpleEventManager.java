@@ -10,11 +10,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.simpleEventManager.api.EventGame;
 import org.simpleEventManager.command.EventCommand;
-import org.simpleEventManager.manager.EventController;
-import org.simpleEventManager.manager.EventLoader;
-import org.simpleEventManager.manager.MessageManager;
-import org.simpleEventManager.manager.ParticipantManager;
-import org.simpleEventManager.manager.RewardManager;
+import org.simpleEventManager.manager.*;
+import org.simpleEventManager.placeholders.SEMPlaceholder;
 import org.simpleEventManager.scheduler.EventScheduler;
 import org.simpleEventManager.state.LobbyState;
 
@@ -30,6 +27,8 @@ public class SimpleEventManager extends JavaPlugin {
     private RewardManager rewardManager;
     private EventController eventController;
     private EventGame currentGame;
+    private WinManager winManager;
+
 
     @Override
     public void onEnable() {
@@ -40,6 +39,13 @@ public class SimpleEventManager extends JavaPlugin {
         this.rewardManager = new RewardManager(this);
         eventLoader.loadEvents();
 
+        this.winManager = new WinManager(getDataFolder());
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new SEMPlaceholder(this).register();
+        }
+
+        // Gestion du kick/retour au spawn si un joueur quitte
         getServer().getPluginManager().registerEvents(new Listener() {
             @EventHandler
             public void onQuit(PlayerQuitEvent event) {
@@ -51,9 +57,13 @@ public class SimpleEventManager extends JavaPlugin {
             }
         }, this);
 
+        // Scheduler qui vérifie chaque tick s'il y a un winner
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             EventGame game = getCurrentGame();
             if (game != null && game.hasWinner()) {
+                // On désamorce immédiatement pour éviter tout double appel
+                setCurrentGame(null);
+                // Puis on termine proprement l'event (stop, rewards, cleanup…)
                 getEventController().endEvent(game);
             }
         }, 20L, 20L);
@@ -115,5 +125,9 @@ public class SimpleEventManager extends JavaPlugin {
         for (Player player : players) {
             player.setInvulnerable(activated);
         }
+    }
+
+    public WinManager getWinManager() {
+        return winManager;
     }
 }

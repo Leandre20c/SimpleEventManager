@@ -14,7 +14,7 @@ public class EventLoader {
         for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
             if (plugin instanceof EventGame eventGame) {
                 loadedEvents.add(eventGame);
-                Bukkit.getLogger().info("[EventManager] Event chargé : " + eventGame.getEventName());
+                Bukkit.getLogger().info("[SimpleEventManager] Event chargé : " + eventGame.getEventName());
             }
         }
     }
@@ -26,7 +26,7 @@ public class EventLoader {
     public EventGame getEventByName(String name) {
         return loadedEvents.stream()
                 .filter(e -> e.getEventName().equalsIgnoreCase(name))
-                .findFirst().orElse(null);
+                .findFirst()
+                .orElse(null);
     }
-
 }

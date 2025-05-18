@@ -1,14 +1,12 @@
 package org.simpleEventManager.command.sub;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.simpleEventManager.SimpleEventManager;
 import org.simpleEventManager.api.EventGame;
 import org.simpleEventManager.state.LobbyState;
+import org.simpleEventManager.utils.LobbyStarter;
 
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.Objects;
 
 public class StartCommand implements SubCommand {
 
@@ -22,9 +20,18 @@ public class StartCommand implements SubCommand {
     public boolean execute(CommandSender sender, String[] args) {
         LobbyState lobbyState = plugin.getLobbyState();
 
-        if (args.length == 2) {
-            // /event start <event_name> -> ouvre le lobby
+        if (args.length >= 2) {
+            if (!sender.hasPermission("event.admin")) {
+                sender.sendMessage(plugin.getMessageManager().prefixed("no-permission"));
+                return true;
+            }
+
             if (lobbyState.isLobbyOpen()) {
+                if (Objects.equals(args[1], plugin.getCurrentGame().getEventName()))
+                {
+                    LobbyStarter.launchEvent(plugin, plugin.getCurrentGame());
+                    return true;
+                }
                 sender.sendMessage("§cUn lobby est déjà actif.");
                 return true;
             }
@@ -35,51 +42,29 @@ public class StartCommand implements SubCommand {
                 return true;
             }
 
-            lobbyState.openLobby();
-            plugin.setCurrentGame(game);
-            Bukkit.broadcastMessage("§aUn event §e" + game.getEventName() + "§a va bientôt commencer ! Faites §e/event join §apour participer. Lancement dans 10 minutes.");
+            String subEvent = args.length >= 3 ? args[2] : null;
 
-            // Timer 10 min automatique
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (lobbyState.isLobbyOpen()) {
-                    launchEvent(sender, lobbyState, game);
-                }
-            }, 12000L); // 12000 ticks = 10 min
+            game.setMode(subEvent);
 
-            return true;
+
+            LobbyStarter.startLobbyWithCountdown(plugin, game);
 
         } else if (args.length == 1) {
-            // /event start -> Lance directement si lobby ouvert
             if (!lobbyState.isLobbyOpen()) {
                 sender.sendMessage("§cAucun lobby actif actuellement.");
                 return true;
             }
 
-            EventGame currentGame = plugin.getCurrentGame();
-            if (currentGame == null) {
-                sender.sendMessage("§cErreur interne : Aucun événement chargé.");
+            if (plugin.getCurrentGame() == null) {
+                sender.sendMessage("§cErreur : aucun événement chargé.");
                 return true;
             }
 
-            launchEvent(sender, lobbyState, currentGame);
+            LobbyStarter.launchEvent(plugin, plugin.getCurrentGame());
             return true;
         }
 
         sender.sendMessage("§cUsage : /event start <event_name> ou /event start");
         return true;
-    }
-
-    private void launchEvent(CommandSender sender, LobbyState lobbyState, EventGame game) {
-        lobbyState.closeLobby();
-
-        Set<Player> participants = plugin.getParticipantManager().getOnlineParticipants();
-        if (participants.size() < 2) {
-            Bukkit.broadcastMessage("§cPas assez de joueurs inscrits pour démarrer l'événement !");
-            plugin.getParticipantManager().clear();
-            return;
-        }
-
-        game.start(new ArrayList<>(participants));
-        Bukkit.broadcastMessage("§aL'événement §e" + game.getEventName() + "§a commence maintenant avec §e" + participants.size() + " joueurs§a ! Bonne chance à tous !");
     }
 }

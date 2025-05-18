@@ -1,8 +1,10 @@
 # Horaires des events
 schedule:
-  spleef:
+  RANDOM_EVENT:
     - "18:00"
-    - "22:00"
+
+lobby-wait-time: 5  # en minutes
+
 
 # Spawn du lobby général
 event-lobby:
