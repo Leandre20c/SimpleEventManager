@@ -1,0 +1,10 @@
+﻿prefix: "§6[Event] "
+
+unknown-command: "§cCommande inconnue."
+player-only: "§cSeuls le joueurs peuvent utiliser cette commande."
+usage: "§eUtilise /event rules|join|list>"
+no-event-yet: "§cIl n'y a pas encore d'event."
+lobby-joined: "§eTu as rejoins le lobby"
+not-in-lobby: "§cTu dois être dans le lobby."
+rules-unavailable: "&cLes règles ne sont pas disponibles pour le moment."
+no-permission: "&cTu ne peux pas faire ça."

@@ -32,6 +32,9 @@ public class LeaveCommand implements SubCommand {
         }
 
         plugin.getParticipantManager().leave(player);
+        if (plugin.getCurrentGame() != null) {
+            plugin.getCurrentGame().Removeplayer(player);
+        }
         resetPlayerState(player);
 
         player.performCommand("spawn");

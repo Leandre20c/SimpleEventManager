@@ -12,6 +12,7 @@ public interface EventGame {
     default List<Player> getWinners() {
         return List.of();
     }
+    void Removeplayer(Player player);
     default void setMode(String mode) {
         // optional sub events
     }

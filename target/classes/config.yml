@@ -1,0 +1,27 @@
+# Horaires des events
+schedule:
+  RANDOM_EVENT:
+    - "18:00"
+
+lobby-wait-time: 5  # en minutes
+
+
+# Spawn du lobby général
+event-lobby:
+  world: Event
+  x: -23.65
+  y: -8.0
+  z: 0.79
+  yaw: 73.7
+  pitch: 13.1
+
+# Spawns spécifiques à chaque event
+event-spawns:
+  spleef:
+    world: Event
+    x: 100.0
+    y: 64.0
+    z: 200.0
+    yaw: 180.0
+    pitch: 0.0
+
