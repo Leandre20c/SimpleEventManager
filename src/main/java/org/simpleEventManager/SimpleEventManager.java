@@ -52,6 +52,7 @@ public class SimpleEventManager extends JavaPlugin {
                 Player player = event.getPlayer();
                 if (participantManager.isParticipant(player)) {
                     participantManager.leave(player);
+                    currentGame.Removeplayer(player);
                     player.teleport(getServer().getWorlds().get(0).getSpawnLocation());
                 }
             }

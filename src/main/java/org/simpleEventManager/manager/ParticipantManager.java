@@ -16,9 +16,7 @@ public class ParticipantManager {
         participants.add(player.getUniqueId());
     }
 
-    public void leave(Player player) {
-        participants.remove(player.getUniqueId());
-    }
+    public void leave(Player player) {participants.remove(player.getUniqueId());}
 
     public void removeIfOffline() {
         participants.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
