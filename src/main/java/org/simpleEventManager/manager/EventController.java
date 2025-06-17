@@ -20,9 +20,10 @@ public class EventController {
     public void endEvent(EventGame game) {
         List<Player> winners = new ArrayList<>(game.getWinners());
 
-        for (Player player : winners) {
-            plugin.getWinManager().addWin(player.getUniqueId(), game.getEventName());
+        if (!winners.isEmpty()) {
+            plugin.getWinManager().addWin(winners.get(0).getUniqueId(), game.getEventName());
         }
+
 
         game.stop();
 
@@ -39,7 +40,6 @@ public class EventController {
         for (Player player : plugin.getParticipantManager().getOnlineParticipants()) {
             resetPlayer(player);
             player.performCommand("spawn");
-            player.sendMessage("§eVous avez été téléporté au spawn. Merci d’avoir participé !");
         }
 
         new RewardManager(plugin).distribute(winners);

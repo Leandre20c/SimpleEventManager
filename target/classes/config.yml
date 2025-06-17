@@ -5,6 +5,25 @@ schedule:
 
 lobby-wait-time: 5  # en minutes
 
+rewards:
+  '1':
+    1:
+      displayname: "&e2000 PE"
+      lore: "Clique pour 2000PE"
+      reward: eco give %player% 2000
+    2:
+      displayname: "Skills points"
+      lore: ""
+      reward: giveskills %player% 2
+    3:
+      displayname: "&e2000 da"
+      lore: "Clique pour 2000da"
+      reward: eco give %player% 2000
+
+  '2': eco give %player% 1200
+  '3': eco give %player% 800
+  default: eco give %player% 500
+
 
 # Spawn du lobby général
 event-lobby:

@@ -6,6 +6,7 @@ org\simpleEventManager\command\sub\JoinCommand.class
 org\simpleEventManager\api\EventGame.class
 org\simpleEventManager\command\sub\StopCommand.class
 org\simpleEventManager\SimpleEventManager.class
+org\simpleEventManager\manager\RewardGUI.class
 org\simpleEventManager\command\sub\LeaveCommand.class
 org\simpleEventManager\utils\EventUtils.class
 org\simpleEventManager\state\LobbyState.class
