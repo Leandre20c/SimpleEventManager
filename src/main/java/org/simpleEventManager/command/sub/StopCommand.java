@@ -25,7 +25,7 @@ public class StopCommand implements SubCommand {
         EventGame currentGame = plugin.getCurrentGame();
 
         if (!sender.hasPermission("event.admin")) {
-            sender.sendMessage(plugin.getMessageManager().prefixed("no-permission"));
+            sender.sendMessage(plugin.getMessageManager().get("no-permission"));
             return true;
         }
 

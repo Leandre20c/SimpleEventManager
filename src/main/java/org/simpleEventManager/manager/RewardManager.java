@@ -1,12 +1,12 @@
 package org.simpleEventManager.manager;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.simpleEventManager.SimpleEventManager;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class RewardManager {
 
@@ -19,22 +19,24 @@ public class RewardManager {
     public void distribute(List<Player> winners) {
         if (winners == null || winners.isEmpty()) return;
 
-        FileConfiguration config = plugin.getConfig(); // ou plugin.getRewardConfig() si tu gères rewards.yml séparément
-        List<Player> modifiableWinners = new ArrayList<>(winners);
+        FileConfiguration config = plugin.getConfig();
+        ConfigurationSection rewardSection = config.getConfigurationSection("rewards");
+        if (rewardSection == null) return;
 
-        for (int i = 0; i < modifiableWinners.size(); i++) {
-            Player player = modifiableWinners.get(i);
-            String command;
+        for (int i = 0; i < winners.size(); i++) {
+            Player player = winners.get(i);
+            int rank = i + 1;
 
-            if (config.contains("rewards." + (i + 1))) {
-                command = config.getString("rewards." + (i + 1));
-            } else {
-                command = config.getString("rewards.default");
+            List<String> commands = rewardSection.getStringList(String.valueOf(rank));
+            if (commands.isEmpty()) {
+                commands = rewardSection.getStringList("default");
             }
 
-            if (command != null) {
-                command = command.replace("%player%", player.getName());
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            for (String cmd : commands) {
+                if (cmd != null && !cmd.isEmpty()) {
+                    cmd = cmd.replace("%player%", player.getName());
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+                }
             }
         }
     }

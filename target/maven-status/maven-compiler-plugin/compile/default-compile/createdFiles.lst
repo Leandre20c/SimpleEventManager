@@ -10,6 +10,7 @@ org\simpleEventManager\manager\RewardGUI.class
 org\simpleEventManager\command\sub\LeaveCommand.class
 org\simpleEventManager\utils\EventUtils.class
 org\simpleEventManager\state\LobbyState.class
+org\simpleEventManager\command\sub\StartCommand$EventConfig.class
 org\simpleEventManager\command\sub\SubCommand.class
 org\simpleEventManager\manager\EventController.class
 org\simpleEventManager\utils\LobbyStarter$1.class

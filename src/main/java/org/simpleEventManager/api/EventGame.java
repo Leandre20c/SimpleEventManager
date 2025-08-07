@@ -19,4 +19,10 @@ public interface EventGame {
     default String getMode() {
         return "default";
     }
+    default boolean isRewardsEnabled() {
+        return true;
+    }
+    default boolean isNotificationsEnabled() {
+        return false;
+    }
 }

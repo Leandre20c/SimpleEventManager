@@ -25,7 +25,7 @@ public class RulesCommand implements SubCommand {
         }
 
         // Affichage des règles, à terme dynamiques
-        player.sendMessage(plugin.getMessageManager().get("rules-message"));
+        player.sendMessage(plugin.getMessageManager().prefixed("rules-message"));
         return true;
     }
 }

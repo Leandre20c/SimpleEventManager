@@ -97,7 +97,7 @@ public class WinManager {
         return Optional.ofNullable(Bukkit.getOfflinePlayer(target).getName()).orElse("Inconnu");
     }
 
-    public String getTopPlayerEntry(int rank) {
+    public int getTopPlayerEntry(int rank) {
         Map<UUID, Integer> totalWins = new HashMap<>();
 
         for (String key : config.getKeys(false)) {
@@ -114,16 +114,16 @@ public class WinManager {
                 .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
                 .toList();
 
-        if (rank - 1 >= sorted.size()) return "";
+        if (rank - 1 >= sorted.size()) return -1;
 
         UUID uuid = sorted.get(rank - 1).getKey();
         int wins = sorted.get(rank - 1).getValue();
         String name = Bukkit.getOfflinePlayer(uuid).getName();
 
-        return (name != null ? name : "Inconnu") + ": " + wins;
+        return  wins;
     }
 
-    public String getTopPlayerEntryForEvent(int rank, String eventName) {
+    public int getTopPlayerEntryForEvent(int rank, String eventName) {
         Map<UUID, Integer> eventWins = new HashMap<>();
 
         for (String key : config.getKeys(false)) {
@@ -142,13 +142,13 @@ public class WinManager {
                 .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
                 .toList();
 
-        if (rank - 1 >= sorted.size()) return "";
+        if (rank - 1 >= sorted.size()) return -1;
 
         UUID uuid = sorted.get(rank - 1).getKey();
         int wins = sorted.get(rank - 1).getValue();
         String name = Bukkit.getOfflinePlayer(uuid).getName();
 
-        return (name != null ? name : "Inconnu") + ": " + wins;
+        return  wins;
     }
 
 

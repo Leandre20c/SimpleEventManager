@@ -1,10 +1,29 @@
-﻿prefix: "§6[Event] "
+﻿# Messages généraux
+  prefix="§8[§6Event§8] §r"
+  only-players="§cCette commande ne peut être utilisée que par des joueurs."
+  unknown-command=§cCommande inconnue. Utilisez /event pour voir l'aide.
+usage=§eUtilisation: /event [join|leave|list|rules|start|stop|setspawn]
 
-unknown-command: "§cCommande inconnue."
-player-only: "§cSeuls le joueurs peuvent utiliser cette commande."
-usage: "§eUtilise /event rules|join|list>"
-no-event-yet: "§cIl n'y a pas encore d'event."
-lobby-joined: "§eTu as rejoins le lobby"
-not-in-lobby: "§cTu dois être dans le lobby."
-rules-unavailable: "&cLes règles ne sont pas disponibles pour le moment."
-no-permission: "&cTu ne peux pas faire ça."
+# Messages de permissions
+  no-permission-join=§cVous n'avez pas la permission de rejoindre les événements. Contactez un administrateur pour obtenir l'accès.
+  no-permission=§cVous n'avez pas la permission d'utiliser cette commande.
+  
+  # Messages d'événements
+  no-event-preparing=§cAucun événement n'est en cours de préparation.
+  already-in-event=§cVous participez déjà à cet événement.
+  event-full=§cL'événement est complet. Impossible de rejoindre.
+  lobby-spawn-not-set=§cLe spawn du lobby n'a pas été défini. Contactez un administrateur.
+  join-failed=§cErreur lors de la tentative de rejoindre l'événement.
+  joined-event=§aTu as rejoint le lobby de l'événement ! Bonne chance !
+  player-joined-event=§e{player} a rejoint l'événement ! (§b{count} participants§e)
+  
+  # Messages pour les autres commandes
+  left-event=§aVous avez quitté l'événement.
+  not-in-event=§cVous ne participez à aucun événement.
+  event-started=§aL'événement §e{event} §aa été démarré !
+  event-stopped=§cL'événement a été arrêté.
+  spawn-set=§aSpawn défini pour §e{location}§a.
+
+# Messages de liste
+participant-list=§eParticipants ({count}): {players}
+  no-participants=§cAucun participant pour le moment.

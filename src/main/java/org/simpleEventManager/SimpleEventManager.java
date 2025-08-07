@@ -16,23 +16,27 @@ import org.simpleEventManager.scheduler.EventScheduler;
 import org.simpleEventManager.state.LobbyState;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 public class SimpleEventManager extends JavaPlugin {
 
     private final LobbyState lobbyState = new LobbyState();
-    private final ParticipantManager participantManager = new ParticipantManager();
     private final EventLoader eventLoader = new EventLoader();
     private final MessageManager messageManager = new MessageManager(this);
+
+    // ✅ NE PAS initialiser ici - faire dans onEnable()
+    private ParticipantManager participantManager;
     private RewardManager rewardManager;
     private EventController eventController;
     private EventGame currentGame;
     private WinManager winManager;
 
-
     @Override
     public void onEnable() {
         saveDefaultConfig();
+
+        // ✅ Initialiser le ParticipantManager APRÈS que le plugin soit activé
+        this.participantManager = new ParticipantManager();
+
         new EventCommand(this);
         new EventScheduler(this).start();
         this.eventController = new EventController(this);
@@ -52,7 +56,9 @@ public class SimpleEventManager extends JavaPlugin {
                 Player player = event.getPlayer();
                 if (participantManager.isParticipant(player)) {
                     participantManager.leave(player);
-                    currentGame.Removeplayer(player);
+                    if (currentGame != null) {
+                        currentGame.Removeplayer(player);
+                    }
                     player.teleport(getServer().getWorlds().get(0).getSpawnLocation());
                 }
             }
@@ -74,6 +80,16 @@ public class SimpleEventManager extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Nettoyage du ParticipantManager s'il a des resources à libérer
+        if (participantManager != null && participantManager instanceof Listener) {
+            // Si c'est la version avec events, on peut faire un cleanup
+            try {
+                participantManager.getClass().getMethod("shutdown").invoke(participantManager);
+            } catch (Exception ignored) {
+                // La méthode shutdown n'existe pas, pas grave
+            }
+        }
+
         getLogger().info("SimpleEventManager disabled.");
     }
 

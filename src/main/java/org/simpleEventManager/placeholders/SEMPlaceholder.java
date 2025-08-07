@@ -47,38 +47,65 @@ public class SEMPlaceholder extends PlaceholderExpansion {
         }
 
         if (identifier.startsWith("top_")) {
-            try {
-                int rank = Integer.parseInt(identifier.substring("top_".length()));
-                return plugin.getWinManager().getTopPlayerName(rank);
-            } catch (NumberFormatException e) {
-                return "";
-            }
-        }
-
-        if (identifier.startsWith("top_")) {
             String[] parts = identifier.split("_");
 
-            // %sem_top_1%
+            // %sem_top_1% → "Name : Value"
             if (parts.length == 2) {
                 try {
                     int rank = Integer.parseInt(parts[1]);
-                    return plugin.getWinManager().getTopPlayerEntry(rank);
+                    String name = plugin.getWinManager().getTopPlayerName(rank);
+                    int value = plugin.getWinManager().getTopPlayerEntry(rank);
+                    return name + " : " + value;
                 } catch (NumberFormatException e) {
                     return "";
                 }
             }
 
-            // %sem_top_<event>_<rank>%
+            // %sem_top_<event>_<rank>% → "Name : Value"
             if (parts.length == 3) {
                 String event = parts[1];
                 try {
                     int rank = Integer.parseInt(parts[2]);
-                    return plugin.getWinManager().getTopPlayerEntryForEvent(rank, event);
+                    String name = plugin.getWinManager().getTopPlayerNameForEvent(rank, event);
+                    int value = plugin.getWinManager().getTopPlayerEntryForEvent(rank, event);
+                    return name + " : " + value;
+                } catch (NumberFormatException e) {
+                    return "";
+                }
+            }
+
+            // %sem_top_name_1% ou %sem_top_value_1%
+            if (parts.length == 3) {
+                String type = parts[1]; // "name" ou "value"
+                try {
+                    int rank = Integer.parseInt(parts[2]);
+                    if (type.equalsIgnoreCase("name")) {
+                        return plugin.getWinManager().getTopPlayerName(rank);
+                    } else if (type.equalsIgnoreCase("value")) {
+                        return String.valueOf(plugin.getWinManager().getTopPlayerEntry(rank));
+                    }
+                } catch (NumberFormatException e) {
+                    return "";
+                }
+            }
+
+            // %sem_top_name_<event>_<rank>% ou %sem_top_value_<event>_<rank>%
+            if (parts.length == 4) {
+                String type = parts[1]; // "name" ou "value"
+                String event = parts[2];
+                try {
+                    int rank = Integer.parseInt(parts[3]);
+                    if (type.equalsIgnoreCase("name")) {
+                        return plugin.getWinManager().getTopPlayerNameForEvent(rank, event);
+                    } else if (type.equalsIgnoreCase("value")) {
+                        return String.valueOf(plugin.getWinManager().getTopPlayerEntryForEvent(rank, event));
+                    }
                 } catch (NumberFormatException e) {
                     return "";
                 }
             }
         }
+
 
         return "";
     }

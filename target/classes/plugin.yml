@@ -2,6 +2,7 @@ name: SimpleEventManager
 version: '1.15'
 main: org.simpleEventManager.SimpleEventManager
 api-version: '1.21'
+depend: [ SDiscordMM ]
 
 commands:
   event:
@@ -10,10 +11,45 @@ commands:
     permission: event.use
 
 permissions:
+  # Permissions de base
   event.use:
-    description: Permet aux joueurs d'accéder aux commandes /event join, leave, list, rules
+    description: Permet aux joueurs d'accéder aux commandes de base /event
     default: true
 
+  event.join:
+    description: Permet de rejoindre les événements
+    default: false
+
+  event.leave:
+    description: Permet de quitter les événements
+    default: true
+
+  event.list:
+    description: Permet de voir la liste des participants
+    default: true
+
+  event.rules:
+    description: Permet de voir les règles des événements
+    default: true
+
+  # Permissions administrateur
   event.admin:
     description: Permet d'accéder aux commandes d'administration (start, stop, setspawn)
+    default: op
+
+  event.admin.start:
+    description: Permet de démarrer un événement
+    default: op
+
+  event.admin.stop:
+    description: Permet d'arrêter un événement
+    default: op
+
+  event.admin.setspawn:
+    description: Permet de définir les points de spawn
+    default: op
+
+  # Permission pour bypasser les restrictions
+  event.bypass:
+    description: Permet de bypasser certaines restrictions des événements
     default: op

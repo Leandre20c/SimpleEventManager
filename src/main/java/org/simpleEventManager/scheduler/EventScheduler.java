@@ -55,7 +55,7 @@ public class EventScheduler extends BukkitRunnable {
                     }
 
                     if (game != null) {
-                        LobbyStarter.startLobbyWithCountdown(plugin, game);
+                        LobbyStarter.startLobbyWithCountdown(plugin, game, true);
                     }
                 }
             }
