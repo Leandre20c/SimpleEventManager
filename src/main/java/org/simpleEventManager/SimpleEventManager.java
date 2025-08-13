@@ -133,12 +133,7 @@ public class SimpleEventManager extends JavaPlugin {
                 (float) config.getDouble("event-lobby.pitch")
         );
     }
-
-    public void togglePvp(boolean activated, Player player){
-        player.setInvulnerable(activated);
-    }
-
-    public void togglePvp(boolean activated, List<Player> players){
+    public void setPlayersInvulnerable(boolean activated, List<Player> players){
         for (Player player : players) {
             player.setInvulnerable(activated);
         }

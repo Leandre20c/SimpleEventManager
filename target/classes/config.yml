@@ -17,7 +17,7 @@ rewards:
       reward: giveskills %player% 2
     3:
       displayname: "&e2000 da"
-      lore: "Clique pour 2000da"
+      lore: "Clique pour 2000PE"
       reward: eco give %player% 2000
 
   '2': eco give %player% 1200

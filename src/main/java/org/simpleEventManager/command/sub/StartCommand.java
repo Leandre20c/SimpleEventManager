@@ -50,8 +50,11 @@ public class StartCommand implements SubCommand {
 
             // Configurer l'événement
             game.setMode(eventConfig.subEvent);
-            //game.setRewardsEnabled(eventConfig.rewards);
-            //game.setNotificationsEnabled(eventConfig.notifications);
+
+            // Vérifier l'état des récompenses (globales + événement)
+            boolean globalRewardsEnabled = plugin.getConfig().getBoolean("rewards-enabled", true);
+            boolean eventRewardsEnabled = eventConfig.rewards;
+            boolean finalRewardsEnabled = globalRewardsEnabled && eventRewardsEnabled;
 
             // Messages informatifs pour l'admin
             StringBuilder configMessage = new StringBuilder("§eLancement de l'événement §a" + eventConfig.eventName);
@@ -59,13 +62,26 @@ public class StartCommand implements SubCommand {
                 configMessage.append(" §7(mode: §f").append(eventConfig.subEvent).append("§7)");
             }
             configMessage.append("\n§7├ Notifications Discord: ").append(eventConfig.notifications ? "§aON" : "§cOFF");
-            configMessage.append("\n§7└ Récompenses: ").append(eventConfig.rewards ? "§aON" : "§cOFF");
 
-            if (!eventConfig.rewards) {
+            // Affichage des récompenses avec plus de détails
+            configMessage.append("\n§7├ Récompenses globales: ").append(globalRewardsEnabled ? "§aON" : "§cOFF");
+            configMessage.append("\n§7└ Récompenses événement: ").append(eventRewardsEnabled ? "§aON" : "§cOFF");
+
+            if (!globalRewardsEnabled) {
+                configMessage.append(" §c- Récompenses désactivées dans la config");
+            } else if (!eventRewardsEnabled) {
                 configMessage.append(" §8- Événement fun/test");
+            } else {
+                configMessage.append(" §a- Récompenses seront distribuées");
             }
 
             sender.sendMessage(configMessage.toString());
+
+            // Avertissement spécial si les récompenses globales sont désactivées
+            if (!globalRewardsEnabled) {
+                sender.sendMessage("§c⚠ ATTENTION: Les récompenses sont désactivées globalement dans config.yml");
+                sender.sendMessage("§c  Même avec --rewards on, aucune récompense ne sera distribuée");
+            }
 
             // Démarrer l'événement
             LobbyStarter.startLobbyWithCountdown(plugin, game, eventConfig.notifications);
@@ -172,6 +188,8 @@ public class StartCommand implements SubCommand {
      * Affiche l'aide de la commande
      */
     private void showUsage(CommandSender sender) {
+        boolean globalRewardsEnabled = plugin.getConfig().getBoolean("rewards-enabled", true);
+
         sender.sendMessage("§8§m----§r §6§lCommande /event start §8§m----§r");
         sender.sendMessage("§eUsage:");
         sender.sendMessage("§a/event start §7- Démarre le lobby actuel");
@@ -182,6 +200,15 @@ public class StartCommand implements SubCommand {
         sender.sendMessage("§b--notif on/off §7- Notifications Discord (défaut: §coff§7)");
         sender.sendMessage("§b--rewards on/off §7- Récompenses (défaut: §aon§7)");
         sender.sendMessage("");
+
+        // Afficher l'état des récompenses globales
+        if (globalRewardsEnabled) {
+            sender.sendMessage("§aÉtat: Récompenses globales ACTIVÉES");
+        } else {
+            sender.sendMessage("§cÉtat: Récompenses globales DÉSACTIVÉES dans config.yml");
+            sender.sendMessage("§c  Aucune récompense ne sera distribuée même avec --rewards on");
+        }
+
         sender.sendMessage("§8Note: §7--rewards off = événement fun sans récompenses");
         sender.sendMessage("§8§m-------------------------§r");
     }

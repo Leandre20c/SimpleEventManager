@@ -44,7 +44,8 @@ public class EventController {
                 Player w = winners.get(i);
                 if (w != null && w.isOnline()) {
                     String trophy = getTrophyIcon(i);
-                    Bukkit.broadcastMessage("§e" + trophy + " #" + (i + 1) + " §f" + w.getName());
+                    String statusIndicator = plugin.getParticipantManager().hasManuallyLeft(w) ? " §7(parti tôt)" : "";
+                    Bukkit.broadcastMessage("§e" + trophy + " #" + (i + 1) + " §f" + w.getName() + statusIndicator);
                 }
             }
 
@@ -62,37 +63,44 @@ public class EventController {
             }
         }
 
-        // Gérer tous les participants
-        List<Player> participants = new ArrayList<>(plugin.getParticipantManager().getOnlineParticipants());
-        for (Player player : participants) {
-            resetPlayer(player);
+        // Séparer les participants actifs de ceux partis manuellement
+        List<Player> activeParticipants = new ArrayList<>(plugin.getParticipantManager().getOnlineParticipants());
+        List<Player> manuallyLeftParticipants = new ArrayList<>();
 
-            // Messages personnalisés selon le type d'événement et le résultat
-            if (winners.contains(player)) {
-                if (rewardsEnabled) {
-                    player.sendMessage("§a🎉 Félicitations ! Vous avez gagné et recevrez des récompenses !");
-                } else {
-                    player.sendMessage("§a🎉 Bien joué ! Merci d'avoir participé à cet événement fun !");
-                }
-            } else {
-                if (rewardsEnabled) {
-                    player.sendMessage("§7Merci pour votre participation ! Tentez votre chance au prochain événement.");
-                } else {
-                    player.sendMessage("§7Merci d'avoir participé à cet événement fun !");
-                }
+        // Identifier les participants qui ont quitté manuellement
+        for (Player participant : plugin.getParticipantManager().getAllParticipantsForRewards()) {
+            if (plugin.getParticipantManager().hasManuallyLeft(participant)) {
+                manuallyLeftParticipants.add(participant);
             }
+        }
 
+        // Gérer les participants actifs (reset + téléportation)
+        for (Player player : activeParticipants) {
+            resetPlayer(player);
+            sendEndMessages(player, winners, rewardsEnabled);
             // Téléportation au spawn
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
         }
 
-        // Distribuer les récompenses seulement si activées
+        // Gérer les participants partis manuellement (messages seulement, pas de téléportation)
+        for (Player player : manuallyLeftParticipants) {
+            sendEndMessages(player, winners, rewardsEnabled);
+            // PAS de téléportation - ils sont déjà au spawn
+            plugin.getLogger().info("Participant " + player.getName() + " déjà au spawn (parti manuellement)");
+        }
+
+        // Distribuer les récompenses seulement si activées (pour TOUS les participants)
         if (rewardsEnabled && !winners.isEmpty()) {
             try {
                 RewardManager rewardManager = new RewardManager(plugin);
                 rewardManager.distribute(winners);
+
+                int totalParticipants = activeParticipants.size() + manuallyLeftParticipants.size();
+                int manuallyLeftCount = manuallyLeftParticipants.size();
+
                 plugin.getLogger().info("Récompenses distribuées pour l'événement " + game.getEventName() +
-                        " à " + winners.size() + " gagnant(s)");
+                        " à " + winners.size() + " gagnant(s) sur " + totalParticipants + " participants" +
+                        (manuallyLeftCount > 0 ? " (dont " + manuallyLeftCount + " partis manuellement)" : ""));
             } catch (Exception e) {
                 plugin.getLogger().warning("Erreur lors de la distribution des récompenses: " + e.getMessage());
                 Bukkit.broadcastMessage("§cErreur lors de la distribution des récompenses. Contactez un administrateur.");
@@ -105,6 +113,28 @@ public class EventController {
         plugin.getParticipantManager().clear();
         plugin.setCurrentGame(null);
         plugin.getLobbyState().closeLobby();
+    }
+
+    /**
+     * Envoie les messages de fin personnalisés à un joueur
+     */
+    private void sendEndMessages(Player player, List<Player> winners, boolean rewardsEnabled) {
+        if (winners.contains(player)) {
+            if (rewardsEnabled) {
+                player.sendMessage("§a🎉 Félicitations ! Vous avez gagné et recevrez des récompenses !");
+                if (plugin.getParticipantManager().hasManuallyLeft(player)) {
+                    player.sendMessage("§e💡 Vos récompenses vous sont livrées même si vous êtes parti tôt !");
+                }
+            } else {
+                player.sendMessage("§a🎉 Bien joué ! Merci d'avoir participé à cet événement fun !");
+            }
+        } else {
+            if (rewardsEnabled) {
+                player.sendMessage("§7Merci pour votre participation ! Tentez votre chance au prochain événement.");
+            } else {
+                player.sendMessage("§7Merci d'avoir participé à cet événement fun !");
+            }
+        }
     }
 
     /**
@@ -124,7 +154,6 @@ public class EventController {
      */
     private void resetPlayer(Player player) {
         try {
-            player.getInventory().clear();
             player.setGameMode(GameMode.SURVIVAL);
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
@@ -154,11 +183,17 @@ public class EventController {
 
         Bukkit.broadcastMessage("§c⚠ " + reason);
 
-        List<Player> participants = new ArrayList<>(plugin.getParticipantManager().getOnlineParticipants());
-        for (Player player : participants) {
-            resetPlayer(player);
+        // Gérer tous les participants (actifs et partis manuellement)
+        List<Player> allParticipants = new ArrayList<>(plugin.getParticipantManager().getAllParticipantsForRewards());
+
+        for (Player player : allParticipants) {
             player.sendMessage("§cÉvénement interrompu. Aucune récompense ne sera distribuée.");
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
+
+            // Reset et téléportation seulement pour les participants actifs
+            if (!plugin.getParticipantManager().hasManuallyLeft(player)) {
+                resetPlayer(player);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
+            }
         }
 
         plugin.getParticipantManager().clear();
@@ -177,7 +212,9 @@ public class EventController {
 
         StringBuilder info = new StringBuilder();
         info.append("Événement: ").append(currentGame.getEventName());
-        info.append("\nParticipants: ").append(plugin.getParticipantManager().getOnlineCount());
+        info.append("\nParticipants actifs: ").append(plugin.getParticipantManager().getOnlineCount());
+        info.append("\nParticipants totaux: ").append(plugin.getParticipantManager().getTotalCount());
+        info.append("\nPartis manuellement: ").append(plugin.getParticipantManager().getManuallyLeftParticipants().size());
         info.append("\nRécompenses: ").append(currentGame.isRewardsEnabled() ? "Activées" : "Désactivées");
         info.append("\nNotifications: ").append(currentGame.isNotificationsEnabled() ? "Activées" : "Désactivées");
 

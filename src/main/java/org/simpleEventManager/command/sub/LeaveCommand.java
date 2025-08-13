@@ -30,27 +30,94 @@ public class LeaveCommand implements SubCommand {
             return true;
         }
 
-        // Vérifier que le joueur participe à un événement
-        if (!plugin.getParticipantManager().isParticipant(player)) {
-            player.sendMessage(plugin.getMessageManager().prefixed("not-in-event"));
+        boolean wasParticipant = plugin.getParticipantManager().isParticipant(player);
+        boolean isInEventWorld = isPlayerInEventWorld(player);
+
+        // Cas 1: Le joueur participe officiellement à un événement
+        if (wasParticipant) {
+            handleOfficialParticipantLeave(player);
             return true;
         }
 
+        // Cas 2: Le joueur n'est pas participant mais est dans un monde d'événement
+        if (isInEventWorld) {
+            handleEventWorldLeave(player);
+            return true;
+        }
+
+        // Cas 3: Le joueur n'est ni participant ni dans un monde d'événement
+        // Mais on peut quand même l'aider en cas de problème
+        handleGeneralLeave(player);
+        return true;
+    }
+
+    /**
+     * Gère le départ d'un participant officiel
+     */
+    private void handleOfficialParticipantLeave(Player player) {
+        boolean isEventRunning = plugin.getCurrentGame() != null && plugin.getCurrentGame().hasWinner() == false;
+        boolean isLobbyOpen = plugin.getLobbyState().isLobbyOpen();
+
+        if (isEventRunning && !isLobbyOpen) {
+            // CAS SPÉCIAL : Événement en cours - garde sa place pour les récompenses
+            handleEventRunningLeave(player);
+        } else {
+            // CAS NORMAL : Lobby ou pas d'événement - retire complètement
+            handleNormalLeave(player);
+        }
+    }
+
+    /**
+     * Gère le départ pendant un événement en cours
+     */
+    private void handleEventRunningLeave(Player player) {
+        // Marquer comme parti manuellement (garde sa place pour les récompenses)
+        plugin.getParticipantManager().markAsManuallyLeft(player);
+
+        // Notifier le jeu que le joueur part (pour la logique interne)
+        if (plugin.getCurrentGame() != null) {
+            plugin.getCurrentGame().Removeplayer(player);
+        }
+
+        // Remettre le joueur en état normal et téléporter
+        resetPlayerState(player);
+        teleportToSpawnSafely(player);
+
+        // Messages spéciaux
+        player.sendMessage("§eTu as quitté l'événement en cours.");
+        player.sendMessage("§aℹ Tu conserves ta place pour les récompenses si tu es gagnant !");
+
+        // Annoncer aux autres participants
+        if (plugin.getParticipantManager().getOnlineCount() > 0) {
+            String leaveMessage = "§e" + player.getName() + " §7a quitté l'événement en cours. §8(§b" +
+                    plugin.getParticipantManager().getOnlineCount() + " participants actifs§8)";
+
+            for (Player participant : plugin.getParticipantManager().getOnlineParticipants()) {
+                participant.sendMessage(leaveMessage);
+            }
+        }
+
+        plugin.getLogger().info(player.getName() + " a quitté manuellement pendant l'événement " +
+                plugin.getCurrentGame().getEventName() + " - garde sa place pour les récompenses");
+    }
+
+    /**
+     * Gère le départ normal (lobby ou pas d'événement)
+     */
+    private void handleNormalLeave(Player player) {
         // Retirer le joueur du jeu en cours si nécessaire
         if (plugin.getCurrentGame() != null) {
             plugin.getCurrentGame().Removeplayer(player);
         }
 
-        // Retirer le joueur de la liste des participants
+        // Retirer complètement le joueur de la liste des participants
         plugin.getParticipantManager().leave(player);
 
         // Remettre le joueur en état normal
         resetPlayerState(player);
-
-        // S'assurer que le joueur va au spawn dans tous les cas
         teleportToSpawnSafely(player);
 
-        // Messages de confirmation
+        // Message de confirmation
         player.sendMessage("§cTu as quitté l'événement.");
 
         // Annoncer aux autres participants qu'un joueur a quitté
@@ -63,8 +130,24 @@ public class LeaveCommand implements SubCommand {
                 participant.sendMessage(leaveMessage);
             }
         }
+    }
 
-        return true;
+    /**
+     * Gère le départ d'un joueur dans un monde d'événement mais pas participant
+     */
+    private void handleEventWorldLeave(Player player) {
+        resetPlayerState(player);
+        teleportToSpawnSafely(player);
+        player.sendMessage("§eTu as été renvoyé au spawn depuis le monde d'événement.");
+        plugin.getLogger().info(player.getName() + " a utilisé /event leave depuis un monde d'événement sans être participant officiel");
+    }
+
+    /**
+     * Gère le départ général (joueur pas dans un événement)
+     */
+    private void handleGeneralLeave(Player player) {
+        player.sendMessage("§eTu n'es pas dans un event");
+        plugin.getLogger().info(player.getName() + " a utilisé /event leave sans être dans un événement.");
     }
 
     /**
@@ -74,16 +157,12 @@ public class LeaveCommand implements SubCommand {
         try {
             player.setGameMode(GameMode.SURVIVAL);
             player.setInvulnerable(false);
-            player.getInventory().clear();
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
             player.setFireTicks(0);
             player.setFallDistance(0);
             player.setVelocity(player.getVelocity().zero());
             player.clearActivePotionEffects();
-
-            // Restaurer les permissions PvP si nécessaire
-            plugin.togglePvp(true, player);
 
         } catch (Exception e) {
             plugin.getLogger().warning("Erreur lors de la réinitialisation de l'état du joueur " + player.getName() + ": " + e.getMessage());
@@ -151,6 +230,28 @@ public class LeaveCommand implements SubCommand {
      */
     private boolean isPlayerInEventWorld(Player player) {
         if (plugin.getCurrentGame() == null) {
+            // Vérifier si le joueur est dans un monde qui ressemble à un monde d'événement
+            // Par exemple, si le nom du monde contient "event" ou correspond à un monde configuré
+            String worldName = player.getWorld().getName().toLowerCase();
+
+            // Vérifier contre les mondes d'événements configurés
+            if (plugin.getConfig().contains("event-spawns")) {
+                for (String eventName : plugin.getConfig().getConfigurationSection("event-spawns").getKeys(false)) {
+                    String eventWorld = plugin.getConfig().getString("event-spawns." + eventName + ".world", "").toLowerCase();
+                    if (worldName.equals(eventWorld)) {
+                        return true;
+                    }
+                }
+            }
+
+            // Vérifier contre le monde du lobby
+            if (plugin.getConfig().contains("event-lobby.world")) {
+                String lobbyWorld = plugin.getConfig().getString("event-lobby.world", "").toLowerCase();
+                if (worldName.equals(lobbyWorld)) {
+                    return true;
+                }
+            }
+
             return false;
         }
 

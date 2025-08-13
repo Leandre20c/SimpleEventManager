@@ -70,7 +70,7 @@ public class JoinCommand implements SubCommand {
         }
 
         // Configurer le joueur pour l'événement
-        plugin.togglePvp(false, player);
+        player.setInvulnerable(true);
 
         // Message de succès
         player.sendMessage(plugin.getMessageManager().prefixed("joined-event"));
@@ -82,6 +82,10 @@ public class JoinCommand implements SubCommand {
         // Diffuser le message à tous les participants
         for (Player participant : plugin.getParticipantManager().getOnlineParticipants()) {
             participant.sendMessage(joinMessage);
+        }
+        if (player.getWorld().getName().equalsIgnoreCase("event") || player.getWorld().getName().equalsIgnoreCase("BoatRace"))
+        {
+            player.getInventory().clear();
         }
 
         return true;
